@@ -1,0 +1,8 @@
+name: AdhaEvent
+version: '${project.version}'
+main: lunatic.adhaevent.Main
+api-version: '1.20'
+commands:
+  adhacow:
+    description: spawn cow
+    permission: adha.cow.spawn
