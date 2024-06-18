@@ -2,7 +2,11 @@ name: AdhaEvent
 version: '${project.version}'
 main: lunatic.adhaevent.Main
 api-version: '1.20'
+softdepend:  [ ProtocolLib , ChronoCore]
 commands:
+  adhashop:
+    description: Open shop
+    permission: adha.shop
   adhacow:
     description: spawn cow
     permission: adha.cow.spawn
