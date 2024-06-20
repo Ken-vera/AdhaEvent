@@ -174,5 +174,26 @@
             <version>1.7</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.fabiozumbi12.RedProtect</groupId>
+            <artifactId>RedProtect-Core</artifactId>
+            <version>8.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.fabiozumbi12.RedProtect</groupId>
+            <artifactId>RedProtect-Spigot</artifactId>
+            <version>8.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Import Javadocs -->
+        <dependency>
+            <groupId>io.github.fabiozumbi12.RedProtect</groupId>
+            <artifactId>RedProtect-Spigot</artifactId>
+            <version>8.1.1</version>
+            <classifier>javadoc</classifier>
+        </dependency>
     </dependencies>
 </project>

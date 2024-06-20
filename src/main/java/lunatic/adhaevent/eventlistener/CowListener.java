@@ -1,5 +1,8 @@
 package lunatic.adhaevent.eventlistener;
 
+import br.net.fabiozumbi12.RedProtect.Bukkit.API.RedProtectAPI;
+import br.net.fabiozumbi12.RedProtect.Bukkit.RedProtect;
+import br.net.fabiozumbi12.RedProtect.Bukkit.Region;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.*;
@@ -51,8 +54,13 @@ public class CowListener implements Listener {
                     Player player = (Player) event.getDamager();
                     ItemStack weapon = player.getInventory().getItemInMainHand();
                     double damage = event.getDamage();
+                    double newHealth = livingEntity.getHealth() - damage;
                     if (livingEntity.getCustomName() != null && livingEntity.getCustomName().startsWith("§aAdha ")) {
-                        double newHealth = livingEntity.getHealth() - damage;
+                        Region region = RedProtect.get().getAPI().getRegion(livingEntity.getLocation());
+                        if (region != null && !region.canBuild(player)) {
+                            event.setDamage(0);
+                            return;
+                        }
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             if (newHealth <= 0) {
                                 double maxHealth = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
@@ -120,6 +128,7 @@ public class CowListener implements Listener {
                                 }
                             }
                         });
+
                     }
                 }
             }

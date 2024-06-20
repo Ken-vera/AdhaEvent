@@ -1,5 +1,6 @@
 package lunatic.adhaevent;
 
+import br.net.fabiozumbi12.RedProtect.Bukkit.RedProtect;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.mojang.authlib.GameProfile;
@@ -22,6 +23,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,6 +41,8 @@ public final class Main extends JavaPlugin {
     public DatabaseHook databaseHook;
     public GuiListener guiListener;
     private Economy economy;
+    public static boolean redProtectCheck;
+    private RedProtect redProtect;
 
     @Override
     public void onEnable() {
@@ -63,6 +67,15 @@ public final class Main extends JavaPlugin {
             getLogger().severe("Vault not found! Disabling plugin...");
             getServer().getPluginManager().disablePlugin(this);
             return;
+        }
+
+        redProtectCheck = checkRP();
+
+        if (redProtectCheck != true) {
+            getLogger().severe("RedProtect not found, Disabling!");
+        } else {
+//            new PlaceholderManager(this).register();
+            getLogger().info("Found and hooked into RedProtect!");
         }
 
         dataManager = new DataManager(this);
@@ -195,5 +208,13 @@ public final class Main extends JavaPlugin {
 
     public Economy getEconomy() {
         return economy;
+    }
+
+    private boolean checkRP(){
+        Plugin pRP = Bukkit.getPluginManager().getPlugin("RedProtect");
+        if (pRP != null && pRP.isEnabled()){
+            return true;
+        }
+        return false;
     }
 }
