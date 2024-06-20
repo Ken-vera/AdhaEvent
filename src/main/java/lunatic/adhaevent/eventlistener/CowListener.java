@@ -245,25 +245,25 @@ public class CowListener implements Listener {
                 chance = 0.05;
             }
 
-//                for (Entity babyEntity : baby.getNearbyEntities(5, 5, 5)) {
-//            if (baby.getType() == EntityType.COW ||
-//                    baby.getType() == EntityType.CAMEL ||
-//                    baby.getType() == EntityType.GOAT ||
-//                    baby.getType() == EntityType.SHEEP) {
-                if (Math.random() <= chance) {
-                    if (!baby.getName().startsWith("§aAdha ")) {
-                        Location spawnLocation = event.getEntity().getLocation();
-                        baby.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 500, 2));
-                        baby.setCustomName("§aAdha " + toLowerCaseAndCapitalize(type.toString()) + " §c[§e30.0§7/§e30.0§c]");
-                        baby.setCustomNameVisible(true);
-                        baby.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(30);
-                        baby.setHealth(30);
-                        System.out.println("[BREED] " + type + " entity spawned at " + spawnLocation.getWorld().getName() + " - " + spawnLocation.getX() + ", " + spawnLocation.getY() + ", " + spawnLocation.getZ());
+            if (Math.random() <= chance) {
+                if (!baby.getName().startsWith("§aAdha ")) {
+                    Location spawnLocation = event.getEntity().getLocation();
+                    baby.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 500, 2));
+                    baby.setCustomName("§aAdha " + toLowerCaseAndCapitalize(type.toString()) + " §c[§e30.0§7/§e30.0§c]");
+                    baby.setCustomNameVisible(true);
+                    baby.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(30);
+                    baby.setHealth(30);
+                    System.out.println("[BREED] " + type + " entity spawned at " + spawnLocation.getWorld().getName() + " - " + spawnLocation.getX() + ", " + spawnLocation.getY() + ", " + spawnLocation.getZ());
 
-                    }
+                    // Schedule the removal of the entity after 5 minutes (6000 ticks)
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            baby.remove();
+                        }
+                    }.runTaskLater(plugin, 6000L); // 6000L = 5 minutes in ticks
                 }
-//            }
-//                }
+            }
         }
 
     }
