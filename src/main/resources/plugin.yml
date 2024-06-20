@@ -7,6 +7,6 @@ commands:
   adhashop:
     description: Open shop
     permission: adha.shop
-  adhacow:
-    description: spawn cow
-    permission: adha.cow.spawn
+  adhareload:
+    description: Reload
+    permission: adha.reload

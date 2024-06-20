@@ -12,9 +12,13 @@ import lunatic.adhaevent.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,20 +37,34 @@ public class ProtocolHook extends PacketAdapter {
     }
 
     private void initializeListener() {
-        protocolManager.addPacketListener(new PacketAdapter(plugin,
-                ListenerPriority.NORMAL,
-                PacketType.Play.Client.USE_ENTITY) {
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-                Player player = event.getPlayer();
-                PacketContainer packet = event.getPacket();
+        protocolManager.addPacketListener(this);
+    }
 
-                ItemStack itemInHand = player.getInventory().getItemInMainHand();
-                NBTItem itemRPG = NBTItem.get(itemInHand);
+    @Override
+    public void onPacketReceiving(PacketEvent event) {
+        if (event.getPacketType() == PacketType.Play.Client.USE_ENTITY) {
+            handleUseEntityPacket(event);
+        }
+    }
 
+
+    private void handleUseEntityPacket(PacketEvent event) {
+        if (adhaEvent.getDataManager().getConfig("config.yml").get().getBoolean("use-packet") == true) {
+            PacketContainer packet = event.getPacket();
+            if (adhaEvent.getArmorStandName(packet.getIntegers().read(0)) == null) {
+                return;
+            }
+            System.out.println(packet);
+
+            Player player = event.getPlayer();
+            int entityId = packet.getIntegers().read(0);
+            ItemStack itemInHand = player.getInventory().getItemInMainHand();
+            NBTItem itemRPG = NBTItem.get(itemInHand);
+
+            if (adhaEvent.mmoItemsHook.isMMOItem(itemInHand)) {
                 if (itemRPG.hasType() && itemRPG.getString("MMOITEMS_ITEM_ID").matches("^KARUNG(_\\d+)?$")) {
+
                     Integer maxHeads = itemRPG.getInteger("MAX_HEAD");
-                    int entityId = packet.getIntegers().read(0);
                     Location location = adhaEvent.getArmorStandLocation(entityId);
 
                     ItemMeta itemMeta = itemInHand.getItemMeta();
@@ -63,23 +81,34 @@ public class ProtocolHook extends PacketAdapter {
                     int storedHeads = Integer.parseInt(lore.get(5).split(": ")[1].replaceAll("§.", ""));
 
                     if (storedHeads < maxHeads) {
-                        storedHeads ++;
+                        storedHeads++;
 
                         lore.set(5, "§7Stored Head: §8" + storedHeads);
                         itemMeta.setLore(lore);
                         itemInHand.setItemMeta(itemMeta);
 
-//                        spawnParticle(player, location);
                         destroyPacket(player, entityId);
                         player.playSound(location, Sound.ENTITY_ARMOR_STAND_BREAK, 1.0f, 1.0f);
 
                     } else {
                         player.sendMessage("§cKamu telah mencapai batas maksimal karung!");
                     }
+
                 }
             }
-        });
+        }
     }
+
+    private Entity getEntityFromId(int entityId, Player player) {
+        for (Entity entity : player.getWorld().getEntities()) {
+            if (entity.getEntityId() == entityId) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
+
 
     private void destroyPacket(Player player, int entityId) {
         PacketContainer destroyPacket = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);

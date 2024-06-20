@@ -6,8 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="AdhaEvent" />
+        <module name="adhaevent" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="AdhaEvent" target="9" />
+    </bytecodeTargetLevel>
   </component>
 </project>

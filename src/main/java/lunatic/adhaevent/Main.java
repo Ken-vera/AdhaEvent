@@ -4,20 +4,25 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import lunatic.adhaevent.Data.DataManager;
 import lunatic.adhaevent.Hook.DatabaseHook;
 import lunatic.adhaevent.Hook.MMOItemsHook;
+import lunatic.adhaevent.Hook.PlaceholderManager;
 import lunatic.adhaevent.Hook.ProtocolHook;
 import lunatic.adhaevent.Object.ArmorStand;
 import lunatic.adhaevent.commandlistener.CowSpawnerCommand;
+import lunatic.adhaevent.commandlistener.ReloadCommand;
 import lunatic.adhaevent.commandlistener.ShopCommand;
 import lunatic.adhaevent.eventlistener.CowListener;
 import lunatic.adhaevent.eventlistener.GuiListener;
 import lunatic.adhaevent.headlist.Heads;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
@@ -26,12 +31,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public final class Main extends JavaPlugin {
+    private DataManager dataManager;
     private final ConcurrentMap<Integer, ArmorStand> armorStandData = new ConcurrentHashMap<>();
     public ProtocolHook protocolHook;
     public ProtocolManager protocolManager;
     public MMOItemsHook mmoItemsHook;
     public DatabaseHook databaseHook;
     public GuiListener guiListener;
+    private Economy economy;
 
     @Override
     public void onEnable() {
@@ -43,6 +50,22 @@ public final class Main extends JavaPlugin {
             getLogger().info("Found and hooked into ChronoCore!");
         }
 
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
+            getLogger().severe("PlaceholderAPI not found, Disabling!");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        } else {
+            new PlaceholderManager(this).register();
+            getLogger().info("Found and hooked into PlaceholderAPI!");
+        }
+
+        if (!setupEconomy()) {
+            getLogger().severe("Vault not found! Disabling plugin...");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        dataManager = new DataManager(this);
         protocolManager = ProtocolLibrary.getProtocolManager();
         // Plugin startup logic
         protocolHook = new ProtocolHook(this);
@@ -50,11 +73,20 @@ public final class Main extends JavaPlugin {
         databaseHook = new DatabaseHook();
         guiListener = new GuiListener(this);
 
+        if (dataManager.getConfig("config.yml").get().getBoolean("use-packet") == true) {
+            getLogger().info("Client-Side compatibility enabled!");
+        } else {
+            getLogger().info("Server-Side compatibility enabled!");
+        }
+
         getServer().getPluginManager().registerEvents(new CowListener(this), this);
         getServer().getPluginManager().registerEvents(new GuiListener(this), this);
-        getCommand("adhacow").setExecutor(new CowSpawnerCommand(this));
-        getCommand("adhacow").setTabCompleter(new CowSpawnerCommand(this));
+//        getCommand("adhacow").setExecutor(new CowSpawnerCommand(this));
+//        getCommand("adhacow").setTabCompleter(new CowSpawnerCommand(this));
         getCommand("adhashop").setExecutor(new ShopCommand(this));
+        getCommand("adhareload").setExecutor(new ReloadCommand(this));
+
+        saveDefaultConfig();
     }
 
     @Override
@@ -141,5 +173,27 @@ public final class Main extends JavaPlugin {
 
     public GuiListener getGuiListener() {
         return guiListener;
+    }
+
+    public DataManager getDataManager() {
+        return dataManager;
+    }
+
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+
+        economy = rsp.getProvider();
+        return economy != null;
+    }
+
+    public Economy getEconomy() {
+        return economy;
     }
 }
